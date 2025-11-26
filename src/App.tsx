@@ -1,24 +1,57 @@
 import { useEffect, useState, useRef } from 'react';
-import { Fish, Calendar, Users, Trophy, ChevronDown, Mail, Instagram, Twitter, Youtube, Facebook } from 'lucide-react';
+import { Fish, Calendar, ChevronDown, Mail, Instagram, Twitter, Youtube, Facebook } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import sponsorshipProspectus from './files/Sponsorship Prospectus MHXII.pdf';
+import transparencyReport from './files/transparency-report.pdf';
 
 gsap.registerPlugin(ScrollTrigger);
 
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+interface Bubble {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+  duration: number;
+  zIndex: number;
+}
+
+interface FishItem {
+  id: number;
+  y: number;
+  delay: number;
+  duration: number;
+  color: string;
+}
+
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
 function App() {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [logoPopped, setLogoPopped] = useState(false);
-  const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number; duration: number; zIndex: number }>>([]);
-  const [fish, setFish] = useState<Array<{ id: number; y: number; delay: number; duration: number; color: string }>>([]);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [logoPopped, setLogoPopped] = useState<boolean>(false);
+  const [bubbles, setBubbles] = useState<Bubble[]>([]);
+  const [fish, setFish] = useState<FishItem[]>([]);
   const carouselScrollRef = useRef<HTMLDivElement>(null);
 
-  const heroRef = useRef(null);
-  const aboutRef = useRef(null);
-  const carouselRef = useRef(null);
-  const faqRef = useRef(null);
-  const sponsorsRef = useRef(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLElement>(null);
+  const carouselRef = useRef<HTMLElement>(null);
+  const faqRef = useRef<HTMLElement>(null);
+  const sponsorsRef = useRef<HTMLElement>(null);
 
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  
   const imageSrcs = [
     new URL('./images/mhX1.webp', import.meta.url).href,
     new URL('./images/mhX2.webp', import.meta.url).href,
@@ -28,9 +61,9 @@ function App() {
     new URL('./images/mhX8.webp', import.meta.url).href,
     new URL('./images/mhX9.webp', import.meta.url).href,
     new URL('./images/mhX10.webp', import.meta.url).href
-  ]
+  ];
 
-  const faqs = [
+  const faqs: FAQ[] = [
     { question: "How do I apply?", answer: "Applications have closed. Join our mailing list to be notified when applications open for MasseyHacks X!" },
     { question: "Does it cost anything to attend?", answer: "Nope, MasseyHacks is absolutely free to attend!" },
     { question: "Is MasseyHacks in-person or online?", answer: "MasseyHacks IX will be in-person. Hackers will not have the option to participate fully virtually as we return to a more traditional form of MasseyHacks. Unfortunately, we cannot provide overnight accommodation at the MasseyHacks venue, so hackers will be required to go home for the night and return in the morning." },
@@ -69,7 +102,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const newBubbles = Array.from({ length: 50 }, (_, i) => ({
+    const newBubbles: Bubble[] = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -81,7 +114,7 @@ function App() {
     setBubbles(newBubbles);
 
     const fishColors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffa07a', '#98d8c8', '#f7dc6f', '#bb8fce', '#85c1e2'];
-    const newFish = Array.from({ length: 15 }, (_, i) => ({
+    const newFish: FishItem[] = Array.from({ length: 15 }, (_, i) => ({
       id: i,
       y: Math.random() * 90 + 5,
       delay: Math.random() * 5,
@@ -99,7 +132,6 @@ function App() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Only run animations on screens wider than 768px (tablet and up)
       const shouldAnimate = window.innerWidth >= 768;
 
       if (logoPopped && heroRef.current) {
@@ -172,26 +204,21 @@ function App() {
   }, [logoPopped]);
 
   useEffect(() => {
-    // Auto-advance the carousel every 3s and wrap seamlessly using duplicated slides
     const interval = setInterval(() => {
       if (!carouselScrollRef.current) return;
 
       const el = carouselScrollRef.current;
       const scrollWidth = el.scrollWidth;
       const clientWidth = el.clientWidth;
-      // we duplicated slides, so the logical loop point is at half the scrollWidth
       const halfWidth = scrollWidth / 2;
       const currentScroll = el.scrollLeft;
 
       const target = currentScroll + clientWidth;
       el.scrollTo({ left: target, behavior: 'smooth' });
 
-      // after the smooth scroll completes, if we've crossed the half point, jump back by halfWidth
-      // using a timeout slightly longer than the browser's smooth scroll duration
       setTimeout(() => {
         if (!carouselScrollRef.current) return;
         if (carouselScrollRef.current.scrollLeft >= halfWidth) {
-          // subtract halfWidth to wrap to the equivalent slide in the first set
           carouselScrollRef.current.scrollLeft = carouselScrollRef.current.scrollLeft - halfWidth;
         }
       }, 520);
@@ -228,7 +255,7 @@ function App() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/30 shadow-lg">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 md:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-                <img src={new URL('./images/MHXIILOGO.PNG', import.meta.url).href} alt="MasseyHacks Logo" className="scale-x-125 sm:w-8 sm:h-8 md:w-10 md:h-10" />
+            <img src={new URL('./images/MHXIILOGO.PNG', import.meta.url).href} alt="MasseyHacks Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-[50px] md:h-[50px] object-contain" />
             <span className="text-white font-bold text-base sm:text-lg md:text-2xl drop-shadow-lg">MasseyHacks</span>
           </div>
           <div className="flex gap-2 sm:gap-4 md:gap-8">
@@ -279,47 +306,46 @@ function App() {
         {/* Hero Section */}
         <div ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 pb-12 px-3 sm:px-4">
           <div className="relative z-10 flex flex-col items-center w-full max-w-4xl">
-          {!logoPopped && (
-            <div className="logo-bubble absolute inset-0 flex items-center justify-center">
-              <div className="bubble-animation w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/40 flex items-center justify-center" />
-            </div>
-          )}
-
-          <div className={`logo-content transition-all duration-1000 ${logoPopped ? 'opacity-100 scale-100' : 'opacity-0 scale-0'} w-full`}>
-            <div className="mb-6 sm:mb-8 md:mb-12">
-              <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 mx-auto rounded-full bg-white/30 backdrop-blur-sm border-4 border-white/50 flex items-center justify-center shadow-2xl ">
-                <img src={new URL('./images/MHXIILOGO.PNG', import.meta.url).href} alt="MasseyHacks Logo" className="scale-<100> sm:w-8 sm:h-8 md:w-10 md:h-10" />
+            {!logoPopped && (
+              <div className="logo-bubble absolute inset-0 flex items-center justify-center">
+                <div className="bubble-animation w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/40 flex items-center justify-center" />
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white text-center mt-4 sm:mt-6 md:mt-10 mb-2 sm:mb-3 drop-shadow-2xl px-2 sm:px-4">MasseyHacks 2026</h1>
-              {/* <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white text-center font-light drop-shadow-lg px-2 sm:px-4">Dive Into Innovation</p> */}
-            </div>
+            )}
 
-            {/* Countdown */}
-            <div className="bg-black/30 backdrop-blur-md rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-10 border border-white/30 mb-4 sm:mb-6 shadow-2xl w-full">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:gap-8 mb-3 sm:mb-4 md:mb-6">
-                <div className="countdown-item text-center">
-                  <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.days}</div>
-                  <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Days</div>
+            <div className={`logo-content transition-all duration-1000 ${logoPopped ? 'opacity-100 scale-100' : 'opacity-0 scale-0'} w-full`}>
+              <div className="mb-6 sm:mb-8 md:mb-12">
+                <div className="w-28 h-28 sm:w-40 sm:h-40 md:w-[295px] md:h-[250px] mx-auto rounded-full bg-white/30 backdrop-blur-sm border-4 border-white/50 flex items-center justify-center shadow-2xl">
+                  <img src={new URL('./images/MHXIILOGO.PNG', import.meta.url).href} alt="MasseyHacks Logo" className="w-32 h-32 sm:w-48 sm:h-48 md:w-[420px] md:h-[240px] mx-auto mb-4 sm:mb-6 md:mb-8" />
                 </div>
-                <div className="countdown-item text-center">
-                  <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.hours}</div>
-                  <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Hours</div>
-                </div>
-                <div className="countdown-item text-center">
-                  <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.minutes}</div>
-                  <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Minutes</div>
-                </div>
-                <div className="countdown-item text-center">
-                  <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.seconds}</div>
-                  <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Seconds</div>
-                </div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white text-center mt-4 sm:mt-6 md:mt-10 mb-2 sm:mb-3 drop-shadow-2xl px-2 sm:px-4">MasseyHacksXII</h1>
               </div>
-              <div className="text-center text-white text-sm sm:text-base md:text-xl font-semibold drop-shadow-md px-2">
-                Applications open in February
+
+              {/* Countdown */}
+              <div className="bg-black/30 backdrop-blur-md rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-10 border border-white/30 mb-4 sm:mb-6 shadow-2xl w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:gap-8 mb-3 sm:mb-4 md:mb-6">
+                  <div className="countdown-item text-center">
+                    <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.days}</div>
+                    <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Days</div>
+                  </div>
+                  <div className="countdown-item text-center">
+                    <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.hours}</div>
+                    <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Hours</div>
+                  </div>
+                  <div className="countdown-item text-center">
+                    <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.minutes}</div>
+                    <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Minutes</div>
+                  </div>
+                  <div className="countdown-item text-center">
+                    <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2">{timeLeft.seconds}</div>
+                    <div className="text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-wider">Seconds</div>
+                  </div>
+                </div>
+                <div className="text-center text-white text-sm sm:text-base md:text-xl font-semibold drop-shadow-md px-2">
+                  Applications open in February
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
 
         {/* About Section */}
@@ -338,28 +364,28 @@ function App() {
           </div>
         </section>
 
-      {/* Carousel Section */}
-      <section id="gallery" ref={carouselRef} className="relative py-16 sm:py-24 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center mb-12 sm:mb-16 drop-shadow-lg">Gallery</h2>
-          <div
-            ref={carouselScrollRef}
-            className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth pb-4 scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {Array.from({ length: carouselSlides * 2 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-shrink-0 w-[280px] h-[200px] sm:w-[400px] sm:h-[280px] md:w-[600px] md:h-[400px] bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/20 overflow-hidden relative"
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
-                  <img src={imageSrcs[i % imageSrcs.length]} alt={`MasseyHacks gallery image ${ (i % imageSrcs.length) + 1 }`} className="w-full h-full object-cover" />
+        {/* Carousel Section */}
+        <section id="gallery" ref={carouselRef} className="relative py-16 sm:py-24 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center mb-12 sm:mb-16 drop-shadow-lg">Gallery</h2>
+            <div
+              ref={carouselScrollRef}
+              className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth pb-4 scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {Array.from({ length: carouselSlides * 2 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-[280px] h-[200px] sm:w-[400px] sm:h-[280px] md:w-[600px] md:h-[400px] bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/20 overflow-hidden relative"
+                >
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
+                    <img src={imageSrcs[i % imageSrcs.length]} alt={`MasseyHacks gallery image ${(i % imageSrcs.length) + 1}`} className="w-full h-full object-cover" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
         {/* FAQ Section */}
         <section id="faq" ref={faqRef} className="relative py-16 sm:py-20 md:py-28 px-3 sm:px-4 md:px-6">
@@ -396,14 +422,20 @@ function App() {
         </section>
 
         {/* Sponsors Section */}
-        <section id="sponsors" ref={sponsorsRef} className="relative py-16 sm:py-20 md:py-28 px-3 sm:px-4 md:px-6">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-10 sm:mb-14 md:mb-20 drop-shadow-lg px-2">Our Sponsors</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
-              
-            </div>
+      <section id="sponsors" ref={sponsorsRef} className="relative py-16 sm:py-24 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center mb-12 sm:mb-16 drop-shadow-lg">Become a Sponsor</h2>
+
+          <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-white/20 text-center">
+            <p className="text-white text-base sm:text-lg leading-relaxed mb-3">
+              Interested in becoming a sponsor? Check out our <a href={sponsorshipProspectus} target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 transition-colors">sponsorship prospectus</a>! Contact us at <a href="mailto:hello@masseyhacks.ca" className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 transition-colors">hello@masseyhacks.ca</a>
+            </p>
+            <p className="text-white text-base sm:text-lg">
+              The MasseyHacks XI <a href={transparencyReport} target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 transition-colors">transparency report</a> is available here.
+            </p>
           </div>
-        </section>
+        </div>
+      </section>
       </main>
 
       {/* Footer */}
@@ -476,9 +508,13 @@ function App() {
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
 
 export default App;
+
+
+
+
+
